@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simulador de Maquina de Turing com Duas Fitas</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="layout">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">V2 em JavaScript</p>
+          <h1>Simulador de Maquina de Turing com duas fitas</h1>
+          <p class="subtitle">
+            Edite as transicoes, inicialize a maquina e acompanhe a execucao
+            passo a passo nas duas fitas.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button id="load-example" class="button button-secondary">Carregar exemplo</button>
+          <button id="initialize" class="button">Inicializar</button>
+          <button id="step" class="button button-secondary">Executar passo</button>
+          <button id="run" class="button">Executar ate parar</button>
+        </div>
+      </section>
+
+      <section class="panel config-grid">
+        <div class="field">
+          <label for="initial-state">Estado inicial</label>
+          <input id="initial-state" type="text" value="q0" />
+        </div>
+        <div class="field">
+          <label for="accept-states">Estados de aceitacao</label>
+          <input id="accept-states" type="text" value="q_accept" />
+        </div>
+        <div class="field">
+          <label for="reject-states">Estados de rejeicao</label>
+          <input id="reject-states" type="text" value="q_reject" />
+        </div>
+        <div class="field">
+          <label for="blank-symbol">Simbolo branco</label>
+          <input id="blank-symbol" type="text" value="_" maxlength="1" />
+        </div>
+        <div class="field">
+          <label for="tape-1-input">Entrada da fita 1</label>
+          <input id="tape-1-input" type="text" value="10110" />
+        </div>
+        <div class="field">
+          <label for="tape-2-input">Entrada da fita 2</label>
+          <input id="tape-2-input" type="text" value="" />
+        </div>
+        <div class="field">
+          <label for="max-steps">Maximo de passos</label>
+          <input id="max-steps" type="number" value="1000" min="1" />
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <h2>Transicoes</h2>
+          <p>
+            Informe um JSON de lista. Cada item descreve uma regra da maquina.
+          </p>
+        </div>
+        <textarea id="transitions-input" spellcheck="false"></textarea>
+      </section>
+
+      <section class="dashboard">
+        <div class="panel status-panel">
+          <div class="section-heading">
+            <h2>Status</h2>
+            <p id="status-message">Carregue um exemplo ou configure sua maquina.</p>
+          </div>
+          <div class="stats">
+            <div class="stat-card">
+              <span class="stat-label">Estado atual</span>
+              <strong id="current-state">-</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Passos</span>
+              <strong id="step-count">0</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Resultado</span>
+              <strong id="halt-status">Nao inicializada</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel history-panel">
+          <div class="section-heading">
+            <h2>Historico recente</h2>
+            <p>As ultimas configuracoes processadas pela maquina.</p>
+          </div>
+          <ol id="history-list" class="history-list"></ol>
+        </div>
+      </section>
+
+      <section class="tapes-grid">
+        <article class="panel tape-panel">
+          <div class="section-heading">
+            <h2>Fita 1</h2>
+            <p id="tape-1-summary">Sem dados.</p>
+          </div>
+          <div id="tape-1-view" class="tape-view"></div>
+        </article>
+
+        <article class="panel tape-panel">
+          <div class="section-heading">
+            <h2>Fita 2</h2>
+            <p id="tape-2-summary">Sem dados.</p>
+          </div>
+          <div id="tape-2-view" class="tape-view"></div>
+        </article>
+      </section>
+
+      <section class="panel help-panel">
+        <div class="section-heading">
+          <h2>Formato do JSON</h2>
+          <p>Cada transicao usa os campos abaixo.</p>
+        </div>
+        <pre>[
+  {
+    "state": "q0",
+    "read1": "1",
+    "read2": "_",
+    "nextState": "q0",
+    "write1": "1",
+    "write2": "1",
+    "move1": "R",
+    "move2": "R"
+  }
+]</pre>
+      </section>
+    </main>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
