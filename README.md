@@ -19,88 +19,39 @@ Para os cabeçotes de cada fita, você deve informar a direção como um dos tr�
 
 ---
 
-## 2. Como Utilizar a Rota da API
+## Como rodar o projeto?
 
-Você pode se comunicar com a Máquina de Turing enviando um `POST` para o endpoint de execução. O servidor instanciará a máquina com a sua lógica, simulará passo a passo, e devolverá todo o histórico da simulação.
+Recomendamos criar um ambiente virtual para rodar a aplicação, como requisito basta ter python instalado na sua máquina.
 
-### **POST** `/api/run`
-**Content-Type**: `application/json`
+Crie o ambiente virtual
 
-O corpo da requisição (`payload`) é dividido em 3 blocos obrigatórios: `entrada`, `configuracao` e `transicoes`.
-
-#### Exemplo de Payload (JSON)
-
-```json
-{
-  "entrada": "111",
-  "espera_ms": 200,
-  "configuracao": {
-    "simbolo_inicial": ">",
-    "simbolo_branco": "_",
-    "alfabeto_entrada": ["1"],
-    "alfabeto_auxiliar": ["1", "X"],
-    "estado_inicial": "q0",
-    "estado_aceitacao": "q_aceita",
-    "estado_rejeicao": "q_rejeita"
-  },
-  "transicoes": [
-    {
-      "estado_origem": "q0",
-      "simbolos_lidos": [">", ">"],
-      "simbolos_escritos": [">", ">"],
-      "direcoes": ["D", "P"],
-      "estado_destino": "q1"
-    },
-    {
-      "estado_origem": "q1",
-      "simbolos_lidos": ["1", "_"],
-      "simbolos_escritos": ["X", "1"],
-      "direcoes": ["D", "D"],
-      "estado_destino": "q1"
-    },
-    {
-      "estado_origem": "q1",
-      "simbolos_lidos": ["_", "_"],
-      "simbolos_escritos": ["_", "_"],
-      "direcoes": ["P", "P"],
-      "estado_destino": "q_aceita"
-    }
-  ]
-}
+```sh
+python -m venv nome_do_seu_ambiente
 ```
 
-* O parâmetro `espera_ms` (opcional) determina quantos milissegundos o backend vai travar (sleep) entre cada passo calculado da máquina. Se enviado como 0 ou omitido, o stream virá na velocidade máxima de processamento da CPU.
+Acesse o ambiente virtual
 
-#### Retorno de Sucesso (HTTP 200 - NDJSON Streaming)
-
-O retorno é projetado no formato **NDJSON (Newline Delimited JSON)**. O servidor mantém a conexão aberta e envia os passos do cálculo ao vivo (stream), linha por linha, separadas por `\n`. Isso permite que o Frontend desenhe a animação ou slider passo a passo em tempo real conforme a máquina processa os dados, sem precisar esperar o término do processamento.
-
-Exemplo do fluxo recebido na rede:
-
-```json
-{"iteracao": 0, "estado": "q0", "fita1": "[>]111", "fita2": "[>]_"}
-{"iteracao": 1, "estado": "q1", "fita1": ">[1]11", "fita2": ">[_]"}
-{"iteracao": 2, "estado": "q1", "fita1": ">X[1]1", "fita2": ">1[_]"}
-{"iteracao": 3, "estado": "q_aceita", "fita1": ">X1[1]", "fita2": ">11[_]", "finalizado": true, "aceito": true}
+Windows
+```sh
+env\Scripts\activate
 ```
 
-* Cada linha de objeto descreve o momento em uma iteração.
-* **Colchetes `[ ]` nas Fitas**: A formatação de string retornada no fluxo, como `>X[1]1`, significa que a fita contém `>X11` e o cabeçote atual está parado **em cima do caractere `1` (o terceiro caractere)**.
-
-#### Retorno de Erro (HTTP 400)
-
-Erros ocorrem caso haja um `payload` incompleto, tipos incorretos no JSON, ou caso a máquina entre em Loop Infinito (a API previne travamentos abortando após 5000 iterações).
-
-```json
-{
-  "erro": "A execução excedeu o limite máximo de iterações."
-}
+Linux
+```sh
+source env/bin/activate
 ```
 
----
+Baixar depedências necessárias
+```sh
+pip install -r requirements.txt
+```
 
-## 3. Swagger UI
-A API acompanha documentação nativa via Swagger.
-Com a aplicação Flask rodando, você pode acessar:
-`http://127.0.0.1:5000/apidocs/`
-Lá é possível inspecionar os tipos de cada parâmetro e testar submissões de payloads diretamente no navegador.
+Rodar projeto
+```sh
+python3 app.py
+```
+
+Acessar URL local
+```sh
+http://127.0.0.1:5000
+```

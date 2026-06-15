@@ -158,16 +158,18 @@
         .tape-wrapper {
             background: var(--tape-bg);
             border-radius: 8px;
-            padding: 1rem;
+            padding: 1.25rem 1rem;
             border: 1px solid var(--border-color);
             overflow-x: auto;
-            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.75rem;
+            min-height: 108px;
         }
 
         .tape-label {
-            position: absolute;
-            top: -10px;
-            left: 15px;
+            align-self: flex-start;
             background: var(--surface-color);
             padding: 0 10px;
             font-size: 0.8rem;
@@ -181,12 +183,13 @@
             gap: 4px;
             font-family: 'Fira Code', monospace;
             font-size: 1.2rem;
-            padding-top: 10px;
+            min-height: 56px;
+            align-items: center;
         }
 
         .cell {
             width: 40px;
-            height: 40px;
+            height: 48px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -260,8 +263,10 @@
 <body>
 
     <header>
-        <h1>Máquina de Turing Matemática</h1>
-        <p class="subtitle">Simulador visual em tempo real (Base Unária)</p>
+        <h1>Máquina de Turing Com Duas Fitas</h1>
+        <p class="subtitle">INF05035 - Teoria Da Computação</p>
+        <p class="subtitle">Milton Pacheco - 590535</p>
+        <p class="subtitle">Pedro Gasparetto - 581161</p>
     </header>
 
     <main>
@@ -318,6 +323,202 @@
         let isPlaying = false;
         let playInterval = null;
 
+        function buildTransition(estadoOrigem, simbolosLidos, simbolosEscritos, direcoes, estadoDestino) {
+            return {
+                estado_origem: estadoOrigem,
+                simbolos_lidos: simbolosLidos,
+                simbolos_escritos: simbolosEscritos,
+                direcoes,
+                estado_destino: estadoDestino
+            };
+        }
+
+        function createSumMachine() {
+            return {
+                configuracao: {
+                    simbolo_inicial: '>',
+                    simbolo_branco: '_',
+                    alfabeto_entrada: ['1', '+', '='],
+                    alfabeto_auxiliar: ['1'],
+                    estado_inicial: 'q0',
+                    estado_aceitacao: 'q_aceita',
+                    estado_rejeicao: 'q_rejeita'
+                },
+                transicoes: [
+                    buildTransition('q0', ['>', '>'], ['>', '>'], ['D', 'D'], 'q_read_x'),
+                    buildTransition('q_read_x', ['1', '_'], ['1', '1'], ['D', 'D'], 'q_read_x'),
+                    buildTransition('q_read_x', ['+', '_'], ['+', '_'], ['D', 'P'], 'q_read_y'),
+                    buildTransition('q_read_y', ['1', '_'], ['1', '1'], ['D', 'D'], 'q_read_y'),
+                    buildTransition('q_read_y', ['=', '_'], ['=', '_'], ['D', 'E'], 'q_rewind'),
+                    buildTransition('q_rewind', ['1', '1'], ['1', '1'], ['P', 'E'], 'q_rewind'),
+                    buildTransition('q_rewind', ['_', '1'], ['_', '1'], ['P', 'E'], 'q_rewind'),
+                    buildTransition('q_rewind', ['1', '>'], ['1', '>'], ['P', 'D'], 'q_compare'),
+                    buildTransition('q_rewind', ['_', '>'], ['_', '>'], ['P', 'D'], 'q_compare'),
+                    buildTransition('q_compare', ['1', '1'], ['1', '1'], ['D', 'D'], 'q_compare'),
+                    buildTransition('q_compare', ['_', '_'], ['_', '_'], ['P', 'P'], 'q_aceita')
+                ]
+            };
+        }
+
+        function createSubtractionMachine() {
+            return {
+                configuracao: {
+                    simbolo_inicial: '>',
+                    simbolo_branco: '_',
+                    alfabeto_entrada: ['1', '-', '='],
+                    alfabeto_auxiliar: ['1'],
+                    estado_inicial: 'q0',
+                    estado_aceitacao: 'q_aceita',
+                    estado_rejeicao: 'q_rejeita'
+                },
+                transicoes: [
+                    buildTransition('q0', ['>', '>'], ['>', '>'], ['D', 'D'], 'q_read_x'),
+                    buildTransition('q_read_x', ['1', '_'], ['1', '1'], ['D', 'D'], 'q_read_x'),
+                    buildTransition('q_read_x', ['-', '_'], ['-', '_'], ['P', 'E'], 'q_rewind_x'),
+                    buildTransition('q_rewind_x', ['-', '1'], ['-', '1'], ['P', 'E'], 'q_rewind_x'),
+                    buildTransition('q_rewind_x', ['-', '>'], ['-', '>'], ['D', 'D'], 'q_read_y'),
+                    buildTransition('q_read_y', ['1', '1'], ['1', '1'], ['D', 'D'], 'q_read_y'),
+                    buildTransition('q_read_y', ['=', '1'], ['=', '1'], ['D', 'P'], 'q_compare'),
+                    buildTransition('q_read_y', ['=', '_'], ['=', '_'], ['D', 'P'], 'q_compare'),
+                    buildTransition('q_compare', ['1', '1'], ['1', '1'], ['D', 'D'], 'q_compare'),
+                    buildTransition('q_compare', ['_', '_'], ['_', '_'], ['P', 'P'], 'q_aceita')
+                ]
+            };
+        }
+
+        function createMultiplicationMachine() {
+            return {
+                configuracao: {
+                    simbolo_inicial: '>',
+                    simbolo_branco: '_',
+                    alfabeto_entrada: ['1', '*', '='],
+                    alfabeto_auxiliar: ['1', 'X', 'Z'],
+                    estado_inicial: 'q0',
+                    estado_aceitacao: 'q_aceita',
+                    estado_rejeicao: 'q_rejeita'
+                },
+                transicoes: [
+                    buildTransition('q0', ['>', '>'], ['>', '>'], ['D', 'D'], 'q_read_x'),
+                    buildTransition('q_read_x', ['1', '_'], ['1', '1'], ['D', 'D'], 'q_read_x'),
+                    buildTransition('q_read_x', ['*', '_'], ['*', '_'], ['P', 'E'], 'q_rewind_x'),
+                    buildTransition('q_rewind_x', ['*', '>'], ['*', '>'], ['D', 'D'], 'q_y_loop'),
+                    buildTransition('q_rewind_x', ['*', '1'], ['*', '1'], ['P', 'E'], 'q_rewind_x'),
+                    buildTransition('q_y_loop', ['1', '1'], ['X', '1'], ['D', 'P'], 'q_goto_z'),
+                    buildTransition('q_y_loop', ['1', '_'], ['X', '_'], ['D', 'P'], 'q_goto_z'),
+                    buildTransition('q_y_loop', ['=', '1'], ['=', '1'], ['D', 'P'], 'q_check_z_end'),
+                    buildTransition('q_y_loop', ['=', '_'], ['=', '_'], ['D', 'P'], 'q_check_z_end'),
+                    buildTransition('q_goto_z', ['1', '1'], ['1', '1'], ['D', 'P'], 'q_goto_z'),
+                    buildTransition('q_goto_z', ['1', '_'], ['1', '_'], ['D', 'P'], 'q_goto_z'),
+                    buildTransition('q_goto_z', ['=', '1'], ['=', '1'], ['D', 'P'], 'q_at_z'),
+                    buildTransition('q_goto_z', ['=', '_'], ['=', '_'], ['D', 'P'], 'q_at_z'),
+                    buildTransition('q_at_z', ['Z', '1'], ['Z', '1'], ['D', 'P'], 'q_at_z'),
+                    buildTransition('q_at_z', ['Z', '_'], ['Z', '_'], ['D', 'P'], 'q_at_z'),
+                    buildTransition('q_at_z', ['1', '1'], ['Z', '1'], ['D', 'D'], 'q_match_z'),
+                    buildTransition('q_at_z', ['1', '_'], ['1', '_'], ['P', 'P'], 'q_rewind_both'),
+                    buildTransition('q_at_z', ['_', '_'], ['_', '_'], ['P', 'P'], 'q_rewind_both'),
+                    buildTransition('q_match_z', ['1', '1'], ['Z', '1'], ['D', 'D'], 'q_match_z'),
+                    buildTransition('q_match_z', ['1', '_'], ['1', '_'], ['P', 'E'], 'q_rewind_both'),
+                    buildTransition('q_match_z', ['_', '_'], ['_', '_'], ['P', 'E'], 'q_rewind_both'),
+                    buildTransition('q_rewind_both', ['1', '1'], ['1', '1'], ['E', 'E'], 'q_rewind_both'),
+                    buildTransition('q_rewind_both', ['Z', '1'], ['Z', '1'], ['E', 'E'], 'q_rewind_both'),
+                    buildTransition('q_rewind_both', ['=', '1'], ['=', '1'], ['E', 'E'], 'q_rewind_both'),
+                    buildTransition('q_rewind_both', ['_', '1'], ['_', '1'], ['E', 'E'], 'q_rewind_both'),
+                    buildTransition('q_rewind_both', ['1', '>'], ['1', '>'], ['E', 'P'], 'q_rewind_f1_only'),
+                    buildTransition('q_rewind_both', ['Z', '>'], ['Z', '>'], ['E', 'P'], 'q_rewind_f1_only'),
+                    buildTransition('q_rewind_both', ['=', '>'], ['=', '>'], ['E', 'P'], 'q_rewind_f1_only'),
+                    buildTransition('q_rewind_both', ['_', '>'], ['_', '>'], ['E', 'P'], 'q_rewind_f1_only'),
+                    buildTransition('q_rewind_both', ['1', '_'], ['1', '_'], ['E', 'E'], 'q_rewind_both'),
+                    buildTransition('q_rewind_both', ['Z', '_'], ['Z', '_'], ['E', 'E'], 'q_rewind_both'),
+                    buildTransition('q_rewind_both', ['=', '_'], ['=', '_'], ['E', 'E'], 'q_rewind_both'),
+                    buildTransition('q_rewind_both', ['_', '_'], ['_', '_'], ['E', 'E'], 'q_rewind_both'),
+                    buildTransition('q_rewind_f1_only', ['1', '>'], ['1', '>'], ['E', 'P'], 'q_rewind_f1_only'),
+                    buildTransition('q_rewind_f1_only', ['Z', '>'], ['Z', '>'], ['E', 'P'], 'q_rewind_f1_only'),
+                    buildTransition('q_rewind_f1_only', ['=', '>'], ['=', '>'], ['E', 'P'], 'q_rewind_f1_only'),
+                    buildTransition('q_rewind_f1_only', ['_', '>'], ['_', '>'], ['E', 'P'], 'q_rewind_f1_only'),
+                    buildTransition('q_rewind_f1_only', ['1', '_'], ['1', '_'], ['E', 'P'], 'q_rewind_f1_only'),
+                    buildTransition('q_rewind_f1_only', ['Z', '_'], ['Z', '_'], ['E', 'P'], 'q_rewind_f1_only'),
+                    buildTransition('q_rewind_f1_only', ['=', '_'], ['=', '_'], ['E', 'P'], 'q_rewind_f1_only'),
+                    buildTransition('q_rewind_f1_only', ['_', '_'], ['_', '_'], ['E', 'P'], 'q_rewind_f1_only'),
+                    buildTransition('q_rewind_f1_only', ['X', '>'], ['X', '>'], ['D', 'D'], 'q_y_loop'),
+                    buildTransition('q_rewind_f1_only', ['*', '>'], ['*', '>'], ['D', 'D'], 'q_y_loop'),
+                    buildTransition('q_rewind_f1_only', ['X', '_'], ['X', '_'], ['D', 'P'], 'q_y_loop'),
+                    buildTransition('q_rewind_f1_only', ['*', '_'], ['*', '_'], ['D', 'P'], 'q_y_loop'),
+                    buildTransition('q_check_z_end', ['Z', '1'], ['Z', '1'], ['D', 'P'], 'q_check_z_end'),
+                    buildTransition('q_check_z_end', ['Z', '_'], ['Z', '_'], ['D', 'P'], 'q_check_z_end'),
+                    buildTransition('q_check_z_end', ['_', '1'], ['_', '1'], ['P', 'P'], 'q_aceita'),
+                    buildTransition('q_check_z_end', ['_', '_'], ['_', '_'], ['P', 'P'], 'q_aceita')
+                ]
+            };
+        }
+
+        function createSpecificDfaMachine(entrada) {
+            const transicoes = [
+                buildTransition('q0', ['>', '>'], ['>', '>'], ['D', 'P'], 'q_start')
+            ];
+            const trie = {};
+            let estadoId = 1;
+
+            let node = trie;
+            for (const char of entrada) {
+                if (!node[char]) {
+                    node[char] = { _id: `q_dfa_${estadoId}` };
+                    estadoId += 1;
+                }
+                node = node[char];
+            }
+            node._aceita = true;
+
+            function buildTransitions(currNode, currState) {
+                for (const [char, child] of Object.entries(currNode)) {
+                    if (char.startsWith('_')) continue;
+                    const nextState = child._id;
+                    transicoes.push(buildTransition(currState, [char, '>'], [char, '>'], ['D', 'P'], nextState));
+                    buildTransitions(child, nextState);
+                    if (child._aceita) {
+                        transicoes.push(buildTransition(nextState, ['_', '>'], ['_', '>'], ['P', 'P'], 'q_aceita'));
+                    }
+                }
+            }
+
+            buildTransitions(trie, 'q_start');
+
+            return {
+                configuracao: {
+                    simbolo_inicial: '>',
+                    simbolo_branco: '_',
+                    alfabeto_entrada: ['1', '/', '^', '='],
+                    alfabeto_auxiliar: [],
+                    estado_inicial: 'q0',
+                    estado_aceitacao: 'q_aceita',
+                    estado_rejeicao: 'q_rejeita'
+                },
+                transicoes
+            };
+        }
+
+        function buildPayload(eqInput) {
+            let machineDefinition = null;
+
+            if (eqInput.includes('+')) {
+                machineDefinition = createSumMachine();
+            } else if (eqInput.includes('-')) {
+                machineDefinition = createSubtractionMachine();
+            } else if (eqInput.includes('*')) {
+                machineDefinition = createMultiplicationMachine();
+            } else if (eqInput.includes('/') || eqInput.includes('^')) {
+                machineDefinition = createSpecificDfaMachine(eqInput);
+            } else {
+                throw new Error('Operador não reconhecido. Use +, -, *, / ou ^.');
+            }
+
+            return {
+                entrada: eqInput,
+                espera_ms: 0,
+                configuracao: machineDefinition.configuracao,
+                transicoes: machineDefinition.transicoes
+            };
+        }
+
         async function runMachine() {
             const eqInput = document.getElementById('equation').value.trim();
             if (!eqInput) return;
@@ -332,29 +533,33 @@
             currentIndex = 0;
 
             try {
-                // Simulação de transição e configuração sendo enviada do Front pro Back (Exemplo Base)
-                // O Motor no Back só executará essas regras recebidas!
-                const payload = {
-                    "entrada": eqInput,
-                    "configuracao": {
-                        "simbolo_inicial": ">",
-                        "simbolo_branco": "_",
-                        "alfabeto_entrada": ["1", "+", "=", "*", "-", "/", "^"],
-                        "alfabeto_auxiliar": ["1", "X", "Z"],
-                        "estado_inicial": "q_dummy", 
-                        "estado_aceitacao": "q_aceita",
-                        "estado_rejeicao": "q_rejeita"
-                    },
-                    "transicoes": []
-                };
+                const payload = buildPayload(eqInput);
 
                 const response = await fetch('/api/run', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    // Usando payload estático genérico só pra demonstrar requisição. 
-                    // Obs: Como o backend não cria lógicas mais, enviando sem transições vai dar REJEIÇÃO imediata, a menos que o backend implemente mock.
                     body: JSON.stringify(payload) 
                 });
+
+                if (!response.ok) {
+                    let errorMessage = 'Erro ao executar a máquina.';
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.erro || errorData.error || errorMessage;
+                    } catch (_) {
+                        try {
+                            const errorText = await response.text();
+                            if (errorText.trim()) {
+                                errorMessage = errorText.trim();
+                            }
+                        } catch (_) {}
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                if (!response.body) {
+                    throw new Error('O servidor não retornou um stream de execução.');
+                }
 
                 document.getElementById('simulation-area').style.display = 'block';
                 document.getElementById('loading').style.display = 'none';
@@ -405,7 +610,7 @@
                     }
                 }
             } catch (err) {
-                alert('Erro de conexão com o servidor Flask Stream.');
+                alert(err.message || 'Erro de conexão com o servidor Flask Stream.');
             } finally {
                 document.getElementById('runBtn').disabled = false;
                 document.getElementById('loading').style.display = 'none';
