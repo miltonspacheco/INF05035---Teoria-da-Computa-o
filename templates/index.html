@@ -325,36 +325,87 @@
             document.getElementById('runBtn').disabled = true;
             document.getElementById('loading').style.display = 'block';
             document.getElementById('simulation-area').style.display = 'none';
+            document.getElementById('final-result').textContent = '-';
+            document.getElementById('final-result').className = 'status-value';
+            
+            historyData = [];
+            currentIndex = 0;
 
             try {
+                // Simulação de transição e configuração sendo enviada do Front pro Back (Exemplo Base)
+                // O Motor no Back só executará essas regras recebidas!
+                const payload = {
+                    "entrada": eqInput,
+                    "configuracao": {
+                        "simbolo_inicial": ">",
+                        "simbolo_branco": "_",
+                        "alfabeto_entrada": ["1", "+", "=", "*", "-", "/", "^"],
+                        "alfabeto_auxiliar": ["1", "X", "Z"],
+                        "estado_inicial": "q_dummy", 
+                        "estado_aceitacao": "q_aceita",
+                        "estado_rejeicao": "q_rejeita"
+                    },
+                    "transicoes": []
+                };
+
                 const response = await fetch('/api/run', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ equation: eqInput })
+                    // Usando payload estático genérico só pra demonstrar requisição. 
+                    // Obs: Como o backend não cria lógicas mais, enviando sem transições vai dar REJEIÇÃO imediata, a menos que o backend implemente mock.
+                    body: JSON.stringify(payload) 
                 });
 
-                const data = await response.json();
-                
-                if (response.ok) {
-                    historyData = data.historico;
-                    currentIndex = 0;
-                    document.getElementById('simulation-area').style.display = 'block';
-                    
-                    const resultEl = document.getElementById('final-result');
-                    if (data.aceito) {
-                        resultEl.textContent = 'ACEITO';
-                        resultEl.className = 'status-value accepted';
-                    } else {
-                        resultEl.textContent = 'REJEITADO';
-                        resultEl.className = 'status-value rejected';
-                    }
+                document.getElementById('simulation-area').style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
 
-                    renderStep();
-                } else {
-                    alert('Erro: ' + (data.erro || 'Falha ao executar.'));
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    
+                    // Manter a última parte que pode estar incompleta no buffer
+                    buffer = lines.pop();
+
+                    for (const line of lines) {
+                        if (line.trim() === '') continue;
+                        const data = JSON.parse(line);
+                        
+                        if (data.erro) {
+                            alert('Erro: ' + data.erro);
+                            break;
+                        }
+
+                        historyData.push(data);
+                        
+                        // Desenhar imediatamente o passo ao vivo na tela
+                        currentIndex = historyData.length - 1;
+                        renderStep();
+
+                        if (data.finalizado) {
+                            const resultEl = document.getElementById('final-result');
+                            if (data.aceito) {
+                                resultEl.textContent = 'ACEITO';
+                                resultEl.className = 'status-value accepted';
+                            } else {
+                                resultEl.textContent = 'REJEITADO';
+                                resultEl.className = 'status-value rejected';
+                            }
+                        }
+                        
+                        // Aguardar baseado no slider para ditar a velocidade do streaming visualmente
+                        const speed = document.getElementById('speed').value;
+                        await new Promise(r => setTimeout(r, speed));
+                    }
                 }
             } catch (err) {
-                alert('Erro de conexão com o servidor Flask.');
+                alert('Erro de conexão com o servidor Flask Stream.');
             } finally {
                 document.getElementById('runBtn').disabled = false;
                 document.getElementById('loading').style.display = 'none';

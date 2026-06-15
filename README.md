@@ -33,6 +33,7 @@ O corpo da requisição (`payload`) é dividido em 3 blocos obrigatórios: `entr
 ```json
 {
   "entrada": "111",
+  "espera_ms": 200,
   "configuracao": {
     "simbolo_inicial": ">",
     "simbolo_branco": "_",
@@ -68,41 +69,23 @@ O corpo da requisição (`payload`) é dividido em 3 blocos obrigatórios: `entr
 }
 ```
 
-#### Retorno de Sucesso (HTTP 200)
+* O parâmetro `espera_ms` (opcional) determina quantos milissegundos o backend vai travar (sleep) entre cada passo calculado da máquina. Se enviado como 0 ou omitido, o stream virá na velocidade máxima de processamento da CPU.
 
-O retorno é projetado para permitir que o Frontend desenhe uma animação ou slider passo a passo do processo.
+#### Retorno de Sucesso (HTTP 200 - NDJSON Streaming)
+
+O retorno é projetado no formato **NDJSON (Newline Delimited JSON)**. O servidor mantém a conexão aberta e envia os passos do cálculo ao vivo (stream), linha por linha, separadas por `\n`. Isso permite que o Frontend desenhe a animação ou slider passo a passo em tempo real conforme a máquina processa os dados, sem precisar esperar o término do processamento.
+
+Exemplo do fluxo recebido na rede:
 
 ```json
-{
-  "entrada_processada": "111",
-  "aceito": true,
-  "estado_final": "q_aceita",
-  "historico": [
-    {
-      "iteracao": 0,
-      "estado": "q0",
-      "fita1": "[>]111",
-      "fita2": "[>]_"
-    },
-    {
-      "iteracao": 1,
-      "estado": "q1",
-      "fita1": ">[1]11",
-      "fita2": ">[_]"
-    },
-    {
-      "iteracao": 2,
-      "estado": "q1",
-      "fita1": ">X[1]1",
-      "fita2": ">1[_]"
-    }
-    // ...
-  ]
-}
+{"iteracao": 0, "estado": "q0", "fita1": "[>]111", "fita2": "[>]_"}
+{"iteracao": 1, "estado": "q1", "fita1": ">[1]11", "fita2": ">[_]"}
+{"iteracao": 2, "estado": "q1", "fita1": ">X[1]1", "fita2": ">1[_]"}
+{"iteracao": 3, "estado": "q_aceita", "fita1": ">X1[1]", "fita2": ">11[_]", "finalizado": true, "aceito": true}
 ```
 
-* **`historico`**: Uma array de objetos. Cada objeto descreve o momento em uma iteração.
-* **Colchetes `[ ]` nas Fitas**: A formatação de string retornada no history, como `>X[1]1`, significa que a fita contém `>X11` e o cabeçote atual está parado **em cima do caractere `1` (o terceiro caractere)**.
+* Cada linha de objeto descreve o momento em uma iteração.
+* **Colchetes `[ ]` nas Fitas**: A formatação de string retornada no fluxo, como `>X[1]1`, significa que a fita contém `>X11` e o cabeçote atual está parado **em cima do caractere `1` (o terceiro caractere)**.
 
 #### Retorno de Erro (HTTP 400)
 

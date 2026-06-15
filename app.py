@@ -33,6 +33,10 @@ def run_tm():
               type: string
               description: A string de entrada que estará na Fita 1 inicialmente.
               example: "11+111=11111"
+            espera_ms:
+              type: integer
+              description: Milissegundos a aguardar entre o envio de cada iteração da máquina (para controlar a velocidade do NDJSON Stream no servidor). Se omitido ou 0, processará o mais rápido possível.
+              example: 200
             configuracao:
               type: object
               properties:
@@ -102,7 +106,6 @@ def run_tm():
     transicoes_data = data['transicoes']
     
     try:
-        
         config = Configuracao(
             simbolo_inicial=config_data.get('simbolo_inicial', '>'),
             simbolo_branco=config_data.get('simbolo_branco', '_'),
@@ -113,7 +116,6 @@ def run_tm():
             estado_rejeicao=config_data.get('estado_rejeicao', 'q_rejeita')
         )
         
-       
         transicoes = []
         for t in transicoes_data:
             transicoes.append(Transicao(
@@ -125,57 +127,61 @@ def run_tm():
             ))
             
     except Exception as e:
-        return jsonify({"error": f"Erro ao instanciar os objetos de construção e transição: {str(e)}"}), 400
+        return jsonify({"erro": f"Erro ao instanciar os objetos de construção e transição: {str(e)}"}), 400
 
-    maquina = MaquinaTuringDuasFitas(entrada, config, transicoes)
-    historico = []
+    espera_ms = data.get('espera_ms', 0)
     
-    iteracao = 0
-    
-    MAX_ITERATIONS = 5000
-    
-    while True:
+    from flask import stream_with_context, Response
+    import json
+    import time
+
+    def generate_steps():
+        maquina = MaquinaTuringDuasFitas(entrada, config, transicoes)
+        iteracao = 0
+        MAX_ITERATIONS = 5000
+        
+        while True:
+            f1_max = max(maquina.fitas[0].celulas.keys()) if maquina.fitas[0].celulas else 0
+            f2_max = max(maquina.fitas[1].celulas.keys()) if maquina.fitas[1].celulas else 0
+            
+            str_f1 = "".join([f"[{maquina.fitas[0].celulas[i]}]" if i == maquina.fitas[0].posicao else maquina.fitas[0].celulas[i] for i in range(f1_max + 1)])
+            str_f2 = "".join([f"[{maquina.fitas[1].celulas[i]}]" if i == maquina.fitas[1].posicao else maquina.fitas[1].celulas[i] for i in range(f2_max + 1)])
+            
+            yield json.dumps({
+                "iteracao": iteracao,
+                "estado": maquina.estado_atual,
+                "fita1": str_f1,
+                "fita2": str_f2
+            }) + "\n"
+            
+            if espera_ms > 0:
+                time.sleep(espera_ms / 1000.0)
+            
+            if not maquina.passo(verbose=False, iteracao=iteracao):
+                break
+                
+            iteracao += 1
+            if iteracao > MAX_ITERATIONS:
+                yield json.dumps({"erro": "A execução excedeu o limite máximo de iterações."}) + "\n"
+                return
+
         f1_max = max(maquina.fitas[0].celulas.keys()) if maquina.fitas[0].celulas else 0
         f2_max = max(maquina.fitas[1].celulas.keys()) if maquina.fitas[1].celulas else 0
-        
         str_f1 = "".join([f"[{maquina.fitas[0].celulas[i]}]" if i == maquina.fitas[0].posicao else maquina.fitas[0].celulas[i] for i in range(f1_max + 1)])
         str_f2 = "".join([f"[{maquina.fitas[1].celulas[i]}]" if i == maquina.fitas[1].posicao else maquina.fitas[1].celulas[i] for i in range(f2_max + 1)])
         
-        historico.append({
+        aceito = maquina.estado_atual == config.estado_aceitacao
+        
+        yield json.dumps({
             "iteracao": iteracao,
             "estado": maquina.estado_atual,
             "fita1": str_f1,
-            "fita2": str_f2
-        })
-        
-        if not maquina.passo(verbose=False, iteracao=iteracao):
-            break
-            
-        iteracao += 1
-        if iteracao > MAX_ITERATIONS:
-            return jsonify({"erro": "A execução excedeu o limite máximo de iterações."}), 400
+            "fita2": str_f2,
+            "finalizado": True,
+            "aceito": aceito
+        }) + "\n"
 
-    
-    f1_max = max(maquina.fitas[0].celulas.keys()) if maquina.fitas[0].celulas else 0
-    f2_max = max(maquina.fitas[1].celulas.keys()) if maquina.fitas[1].celulas else 0
-    str_f1 = "".join([f"[{maquina.fitas[0].celulas[i]}]" if i == maquina.fitas[0].posicao else maquina.fitas[0].celulas[i] for i in range(f1_max + 1)])
-    str_f2 = "".join([f"[{maquina.fitas[1].celulas[i]}]" if i == maquina.fitas[1].posicao else maquina.fitas[1].celulas[i] for i in range(f2_max + 1)])
-    
-    historico.append({
-        "iteracao": iteracao,
-        "estado": maquina.estado_atual,
-        "fita1": str_f1,
-        "fita2": str_f2
-    })
-    
-    aceito = maquina.estado_atual == config.estado_aceitacao
-    
-    return jsonify({
-        "entrada_processada": entrada,
-        "aceito": aceito,
-        "estado_final": maquina.estado_atual,
-        "historico": historico
-    })
+    return Response(stream_with_context(generate_steps()), mimetype='application/x-ndjson')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
