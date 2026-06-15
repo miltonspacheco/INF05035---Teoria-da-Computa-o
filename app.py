@@ -131,7 +131,7 @@ def run_tm():
     historico = []
     
     iteracao = 0
-    # Limite de segurança para evitar loops infinitos caso o front envie uma transição maliciosa
+    
     MAX_ITERATIONS = 5000
     
     while True:
