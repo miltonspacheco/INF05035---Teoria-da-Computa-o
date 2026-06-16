@@ -114,9 +114,15 @@
             font-size: 0.95rem;
         }
 
-        .transition-table select {
-            appearance: none;
-        }
+.transition-table select {
+    appearance: auto;
+    -webkit-appearance: menulist;
+    -moz-appearance: menulist;
+    padding-right: 0.5rem;
+    text-align: center;
+    text-align-last: center;
+    min-width: 72px;
+}
 
         .table-wrapper {
             overflow-x: auto;
@@ -144,11 +150,19 @@
             letter-spacing: 0.04em;
         }
 
-        .transition-table td:last-child,
-        .transition-table th:last-child {
-            width: 72px;
-            text-align: center;
-        }
+.transition-table td:last-child,
+.transition-table th:last-child {
+    width: 72px;
+    text-align: center;
+}
+
+.transition-table th:nth-child(6),
+.transition-table th:nth-child(7),
+.transition-table td:nth-child(6),
+.transition-table td:nth-child(7) {
+    min-width: 88px;
+    text-align: center;
+}
 
         .builder-actions {
             display: flex;
@@ -357,4 +371,3 @@
             font-weight: 500;
             margin-top: 1rem;
         }
-
