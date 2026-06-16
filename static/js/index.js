@@ -48,9 +48,31 @@ function removerLinhaTransicao(button) {
 function coletarDefinicaoMaquinaCustomizada(eqInput) {
     const rows = Array.from(document.querySelectorAll('#transition-table-body tr'));
     const transicoesPersonalizadas = [];
-    const alfabetoEntrada = new Set(eqInput.split('').filter(symbol => symbol && symbol !== '>' && symbol !== '_'));
+    const simboloInicial = document.getElementById('custom-start-symbol').value.trim() || '>';
+    const simboloBranco = document.getElementById('custom-blank-symbol').value.trim() || '_';
+    const alfabetoEntradaInformado = document
+        .getElementById('custom-input-alphabet')
+        .value
+        .split(',')
+        .map(symbol => symbol.trim())
+        .filter(Boolean);
+    const alfabetoEntrada = new Set(
+        alfabetoEntradaInformado.length > 0
+            ? alfabetoEntradaInformado
+            : eqInput.split('').filter(symbol => symbol && symbol !== simboloInicial && symbol !== simboloBranco)
+    );
     const alfabetoAuxiliar = new Set();
+    const alfabetoAuxiliarInformado = document
+        .getElementById('custom-auxiliary-alphabet')
+        .value
+        .split(',')
+        .map(symbol => symbol.trim())
+        .filter(Boolean);
     let possuiConteudoCustomizado = false;
+
+    for (const simbolo of alfabetoAuxiliarInformado) {
+        alfabetoAuxiliar.add(simbolo);
+    }
 
     for (const row of rows) {
         const getValue = field => row.querySelector(`[data-field="${field}"]`).value.trim();
@@ -80,7 +102,7 @@ function coletarDefinicaoMaquinaCustomizada(eqInput) {
 
         const simbolos = [values.leitura_f1, values.leitura_f2, values.escrita_f1, values.escrita_f2];
         for (const simbolo of simbolos) {
-            if (simbolo !== '>' && simbolo !== '_' && !alfabetoEntrada.has(simbolo)) {
+            if (simbolo !== simboloInicial && simbolo !== simboloBranco && !alfabetoEntrada.has(simbolo)) {
                 alfabetoAuxiliar.add(simbolo);
             }
         }
@@ -100,8 +122,8 @@ function coletarDefinicaoMaquinaCustomizada(eqInput) {
 
     return {
         configuracao: {
-            simbolo_inicial: '>',
-            simbolo_branco: '_',
+            simbolo_inicial: simboloInicial,
+            simbolo_branco: simboloBranco,
             alfabeto_entrada: Array.from(alfabetoEntrada),
             alfabeto_auxiliar: Array.from(alfabetoAuxiliar),
             estado_inicial: document.getElementById('custom-initial-state').value.trim() || 'q0',
@@ -116,174 +138,11 @@ function construirTransicao(estadoOrigem, simbolosLidos, simbolosEscritos, direc
     return {
         estado_origem: estadoOrigem,
         simbolos_lidos: simbolosLidos,
-                simbolos_escritos: simbolosEscritos,
-                direcoes,
-                estado_destino: estadoDestino
-            };
-        }
-
-        function createSumMachine() {
-        return {
-            configuracao: {
-                simbolo_inicial: '>',
-                    simbolo_branco: '_',
-                    alfabeto_entrada: ['1', '+', '='],
-                    alfabeto_auxiliar: ['1'],
-                    estado_inicial: 'q0',
-                    estado_aceitacao: 'q_aceita',
-                    estado_rejeicao: 'q_rejeita'
-            },
-            transicoes: [
-            construirTransicao('q0', ['>', '>'], ['>', '>'], ['D', 'D'], 'q_read_x'),
-            construirTransicao('q_read_x', ['1', '_'], ['1', '1'], ['D', 'D'], 'q_read_x'),
-            construirTransicao('q_read_x', ['+', '_'], ['+', '_'], ['D', 'P'], 'q_read_y'),
-            construirTransicao('q_read_y', ['1', '_'], ['1', '1'], ['D', 'D'], 'q_read_y'),
-            construirTransicao('q_read_y', ['=', '_'], ['=', '_'], ['D', 'E'], 'q_rewind'),
-            construirTransicao('q_rewind', ['1', '1'], ['1', '1'], ['P', 'E'], 'q_rewind'),
-            construirTransicao('q_rewind', ['_', '1'], ['_', '1'], ['P', 'E'], 'q_rewind'),
-            construirTransicao('q_rewind', ['1', '>'], ['1', '>'], ['P', 'D'], 'q_compare'),
-            construirTransicao('q_rewind', ['_', '>'], ['_', '>'], ['P', 'D'], 'q_compare'),
-            construirTransicao('q_compare', ['1', '1'], ['1', '1'], ['D', 'D'], 'q_compare'),
-            construirTransicao('q_compare', ['_', '_'], ['_', '_'], ['P', 'P'], 'q_aceita')
-                ]
-            };
-        }
-
-        function createSubtractionMachine() {
-            return {
-                configuracao: {
-                    simbolo_inicial: '>',
-                    simbolo_branco: '_',
-                    alfabeto_entrada: ['1', '-', '='],
-                    alfabeto_auxiliar: ['1'],
-                    estado_inicial: 'q0',
-                    estado_aceitacao: 'q_aceita',
-                    estado_rejeicao: 'q_rejeita'
-            },
-            transicoes: [
-            construirTransicao('q0', ['>', '>'], ['>', '>'], ['D', 'D'], 'q_read_x'),
-            construirTransicao('q_read_x', ['1', '_'], ['1', '1'], ['D', 'D'], 'q_read_x'),
-            construirTransicao('q_read_x', ['-', '_'], ['-', '_'], ['P', 'E'], 'q_rewind_x'),
-            construirTransicao('q_rewind_x', ['-', '1'], ['-', '1'], ['P', 'E'], 'q_rewind_x'),
-            construirTransicao('q_rewind_x', ['-', '>'], ['-', '>'], ['D', 'D'], 'q_read_y'),
-            construirTransicao('q_read_y', ['1', '1'], ['1', '1'], ['D', 'D'], 'q_read_y'),
-            construirTransicao('q_read_y', ['=', '1'], ['=', '1'], ['D', 'P'], 'q_compare'),
-            construirTransicao('q_read_y', ['=', '_'], ['=', '_'], ['D', 'P'], 'q_compare'),
-            construirTransicao('q_compare', ['1', '1'], ['1', '1'], ['D', 'D'], 'q_compare'),
-            construirTransicao('q_compare', ['_', '_'], ['_', '_'], ['P', 'P'], 'q_aceita')
-                ]
-            };
-        }
-
-        function createMultiplicationMachine() {
-            return {
-                configuracao: {
-                    simbolo_inicial: '>',
-                    simbolo_branco: '_',
-                    alfabeto_entrada: ['1', '*', '='],
-                    alfabeto_auxiliar: ['1', 'X', 'Z'],
-                    estado_inicial: 'q0',
-                    estado_aceitacao: 'q_aceita',
-                    estado_rejeicao: 'q_rejeita'
-            },
-            transicoes: [
-            construirTransicao('q0', ['>', '>'], ['>', '>'], ['D', 'D'], 'q_read_x'),
-            construirTransicao('q_read_x', ['1', '_'], ['1', '1'], ['D', 'D'], 'q_read_x'),
-            construirTransicao('q_read_x', ['*', '_'], ['*', '_'], ['P', 'E'], 'q_rewind_x'),
-            construirTransicao('q_rewind_x', ['*', '>'], ['*', '>'], ['D', 'D'], 'q_y_loop'),
-            construirTransicao('q_rewind_x', ['*', '1'], ['*', '1'], ['P', 'E'], 'q_rewind_x'),
-            construirTransicao('q_y_loop', ['1', '1'], ['X', '1'], ['D', 'P'], 'q_goto_z'),
-            construirTransicao('q_y_loop', ['1', '_'], ['X', '_'], ['D', 'P'], 'q_goto_z'),
-            construirTransicao('q_y_loop', ['=', '1'], ['=', '1'], ['D', 'P'], 'q_check_z_end'),
-            construirTransicao('q_y_loop', ['=', '_'], ['=', '_'], ['D', 'P'], 'q_check_z_end'),
-            construirTransicao('q_goto_z', ['1', '1'], ['1', '1'], ['D', 'P'], 'q_goto_z'),
-            construirTransicao('q_goto_z', ['1', '_'], ['1', '_'], ['D', 'P'], 'q_goto_z'),
-            construirTransicao('q_goto_z', ['=', '1'], ['=', '1'], ['D', 'P'], 'q_at_z'),
-            construirTransicao('q_goto_z', ['=', '_'], ['=', '_'], ['D', 'P'], 'q_at_z'),
-            construirTransicao('q_at_z', ['Z', '1'], ['Z', '1'], ['D', 'P'], 'q_at_z'),
-            construirTransicao('q_at_z', ['Z', '_'], ['Z', '_'], ['D', 'P'], 'q_at_z'),
-            construirTransicao('q_at_z', ['1', '1'], ['Z', '1'], ['D', 'D'], 'q_match_z'),
-            construirTransicao('q_at_z', ['1', '_'], ['1', '_'], ['P', 'P'], 'q_rewind_both'),
-            construirTransicao('q_at_z', ['_', '_'], ['_', '_'], ['P', 'P'], 'q_rewind_both'),
-            construirTransicao('q_match_z', ['1', '1'], ['Z', '1'], ['D', 'D'], 'q_match_z'),
-            construirTransicao('q_match_z', ['1', '_'], ['1', '_'], ['P', 'E'], 'q_rewind_both'),
-            construirTransicao('q_match_z', ['_', '_'], ['_', '_'], ['P', 'E'], 'q_rewind_both'),
-            construirTransicao('q_rewind_both', ['1', '1'], ['1', '1'], ['E', 'E'], 'q_rewind_both'),
-            construirTransicao('q_rewind_both', ['Z', '1'], ['Z', '1'], ['E', 'E'], 'q_rewind_both'),
-            construirTransicao('q_rewind_both', ['=', '1'], ['=', '1'], ['E', 'E'], 'q_rewind_both'),
-            construirTransicao('q_rewind_both', ['_', '1'], ['_', '1'], ['E', 'E'], 'q_rewind_both'),
-            construirTransicao('q_rewind_both', ['1', '>'], ['1', '>'], ['E', 'P'], 'q_rewind_f1_only'),
-            construirTransicao('q_rewind_both', ['Z', '>'], ['Z', '>'], ['E', 'P'], 'q_rewind_f1_only'),
-            construirTransicao('q_rewind_both', ['=', '>'], ['=', '>'], ['E', 'P'], 'q_rewind_f1_only'),
-            construirTransicao('q_rewind_both', ['_', '>'], ['_', '>'], ['E', 'P'], 'q_rewind_f1_only'),
-            construirTransicao('q_rewind_both', ['1', '_'], ['1', '_'], ['E', 'E'], 'q_rewind_both'),
-            construirTransicao('q_rewind_both', ['Z', '_'], ['Z', '_'], ['E', 'E'], 'q_rewind_both'),
-            construirTransicao('q_rewind_both', ['=', '_'], ['=', '_'], ['E', 'E'], 'q_rewind_both'),
-            construirTransicao('q_rewind_both', ['_', '_'], ['_', '_'], ['E', 'E'], 'q_rewind_both'),
-            construirTransicao('q_rewind_f1_only', ['1', '>'], ['1', '>'], ['E', 'P'], 'q_rewind_f1_only'),
-            construirTransicao('q_rewind_f1_only', ['Z', '>'], ['Z', '>'], ['E', 'P'], 'q_rewind_f1_only'),
-            construirTransicao('q_rewind_f1_only', ['=', '>'], ['=', '>'], ['E', 'P'], 'q_rewind_f1_only'),
-            construirTransicao('q_rewind_f1_only', ['_', '>'], ['_', '>'], ['E', 'P'], 'q_rewind_f1_only'),
-            construirTransicao('q_rewind_f1_only', ['1', '_'], ['1', '_'], ['E', 'P'], 'q_rewind_f1_only'),
-            construirTransicao('q_rewind_f1_only', ['Z', '_'], ['Z', '_'], ['E', 'P'], 'q_rewind_f1_only'),
-            construirTransicao('q_rewind_f1_only', ['=', '_'], ['=', '_'], ['E', 'P'], 'q_rewind_f1_only'),
-            construirTransicao('q_rewind_f1_only', ['_', '_'], ['_', '_'], ['E', 'P'], 'q_rewind_f1_only'),
-            construirTransicao('q_rewind_f1_only', ['X', '>'], ['X', '>'], ['D', 'D'], 'q_y_loop'),
-            construirTransicao('q_rewind_f1_only', ['*', '>'], ['*', '>'], ['D', 'D'], 'q_y_loop'),
-            construirTransicao('q_rewind_f1_only', ['X', '_'], ['X', '_'], ['D', 'P'], 'q_y_loop'),
-            construirTransicao('q_rewind_f1_only', ['*', '_'], ['*', '_'], ['D', 'P'], 'q_y_loop'),
-            construirTransicao('q_check_z_end', ['Z', '1'], ['Z', '1'], ['D', 'P'], 'q_check_z_end'),
-            construirTransicao('q_check_z_end', ['Z', '_'], ['Z', '_'], ['D', 'P'], 'q_check_z_end'),
-            construirTransicao('q_check_z_end', ['_', '1'], ['_', '1'], ['P', 'P'], 'q_aceita'),
-            construirTransicao('q_check_z_end', ['_', '_'], ['_', '_'], ['P', 'P'], 'q_aceita')
-                ]
-            };
-        }
-
-        function createSpecificDfaMachine(entrada) {
-            const transicoes = [
-                construirTransicao('q0', ['>', '>'], ['>', '>'], ['D', 'P'], 'q_start')
-            ];
-            const trie = {};
-            let estadoId = 1;
-
-            let node = trie;
-            for (const char of entrada) {
-                if (!node[char]) {
-                    node[char] = { _id: `q_dfa_${estadoId}` };
-                    estadoId += 1;
-                }
-                node = node[char];
-            }
-            node._aceita = true;
-
-            function construirTransicoes(noAtual, estadoAtual) {
-                for (const [char, child] of Object.entries(noAtual)) {
-                    if (char.startsWith('_')) continue;
-                    const proximoEstado = child._id;
-                    transicoes.push(construirTransicao(estadoAtual, [char, '>'], [char, '>'], ['D', 'P'], proximoEstado));
-                    construirTransicoes(child, proximoEstado);
-                    if (child._aceita) {
-                        transicoes.push(construirTransicao(proximoEstado, ['_', '>'], ['_', '>'], ['P', 'P'], 'q_aceita'));
-                    }
-                }
-            }
-
-            construirTransicoes(trie, 'q_start');
-
-            return {
-                configuracao: {
-                    simbolo_inicial: '>',
-                    simbolo_branco: '_',
-                    alfabeto_entrada: ['1', '/', '^', '='],
-                    alfabeto_auxiliar: [],
-                    estado_inicial: 'q0',
-                    estado_aceitacao: 'q_aceita',
-                    estado_rejeicao: 'q_rejeita'
-                },
-                transicoes
-            };
-        }
+        simbolos_escritos: simbolosEscritos,
+        direcoes,
+        estado_destino: estadoDestino
+    };
+}
 
         function buildPayload(eqInput) {
             const customMachineDefinition = coletarDefinicaoMaquinaCustomizada(eqInput);
