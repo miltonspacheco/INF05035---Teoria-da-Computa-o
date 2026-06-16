@@ -1,7 +1,9 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, stream_with_context, Response
 from main import MaquinaTuringDuasFitas, Configuracao, Transicao
 from flask_cors import CORS
 from flasgger import Swagger
+import json
+import time
 
 app = Flask(__name__)
 CORS(app)
@@ -130,10 +132,6 @@ def run_tm():
         return jsonify({"erro": f"Erro ao instanciar os objetos de construção e transição: {str(e)}"}), 400
 
     espera_ms = data.get('espera_ms', 0)
-    
-    from flask import stream_with_context, Response
-    import json
-    import time
 
     def generate_steps():
         maquina = MaquinaTuringDuasFitas(entrada, config, transicoes)

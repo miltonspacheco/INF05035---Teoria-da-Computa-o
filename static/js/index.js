@@ -290,7 +290,8 @@ function construirTransicao(estadoOrigem, simbolosLidos, simbolosEscritos, direc
             if (historyData.length === 0) return;
 
             const stepData = historyData[currentIndex];
-            document.getElementById('iter-count').textContent = `${stepData.iteracao} / ${historyData.length - 1}`;
+            const total = historyData.filter(d => !d.finalizado).length;
+            document.getElementById('iter-count').textContent = `${stepData.iteracao} / ${total}`;
             document.getElementById('current-state').textContent = stepData.estado;
 
             renderTape(stepData.fita1, 'tape1');
