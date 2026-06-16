@@ -48,9 +48,31 @@ function removerLinhaTransicao(button) {
 function coletarDefinicaoMaquinaCustomizada(eqInput) {
     const rows = Array.from(document.querySelectorAll('#transition-table-body tr'));
     const transicoesPersonalizadas = [];
-    const alfabetoEntrada = new Set(eqInput.split('').filter(symbol => symbol && symbol !== '>' && symbol !== '_'));
+    const simboloInicial = document.getElementById('custom-start-symbol').value.trim() || '>';
+    const simboloBranco = document.getElementById('custom-blank-symbol').value.trim() || '_';
+    const alfabetoEntradaInformado = document
+        .getElementById('custom-input-alphabet')
+        .value
+        .split(',')
+        .map(symbol => symbol.trim())
+        .filter(Boolean);
+    const alfabetoEntrada = new Set(
+        alfabetoEntradaInformado.length > 0
+            ? alfabetoEntradaInformado
+            : eqInput.split('').filter(symbol => symbol && symbol !== simboloInicial && symbol !== simboloBranco)
+    );
     const alfabetoAuxiliar = new Set();
+    const alfabetoAuxiliarInformado = document
+        .getElementById('custom-auxiliary-alphabet')
+        .value
+        .split(',')
+        .map(symbol => symbol.trim())
+        .filter(Boolean);
     let possuiConteudoCustomizado = false;
+
+    for (const simbolo of alfabetoAuxiliarInformado) {
+        alfabetoAuxiliar.add(simbolo);
+    }
 
     for (const row of rows) {
         const getValue = field => row.querySelector(`[data-field="${field}"]`).value.trim();
@@ -80,7 +102,7 @@ function coletarDefinicaoMaquinaCustomizada(eqInput) {
 
         const simbolos = [values.leitura_f1, values.leitura_f2, values.escrita_f1, values.escrita_f2];
         for (const simbolo of simbolos) {
-            if (simbolo !== '>' && simbolo !== '_' && !alfabetoEntrada.has(simbolo)) {
+            if (simbolo !== simboloInicial && simbolo !== simboloBranco && !alfabetoEntrada.has(simbolo)) {
                 alfabetoAuxiliar.add(simbolo);
             }
         }
@@ -100,8 +122,8 @@ function coletarDefinicaoMaquinaCustomizada(eqInput) {
 
     return {
         configuracao: {
-            simbolo_inicial: '>',
-            simbolo_branco: '_',
+            simbolo_inicial: simboloInicial,
+            simbolo_branco: simboloBranco,
             alfabeto_entrada: Array.from(alfabetoEntrada),
             alfabeto_auxiliar: Array.from(alfabetoAuxiliar),
             estado_inicial: document.getElementById('custom-initial-state').value.trim() || 'q0',
