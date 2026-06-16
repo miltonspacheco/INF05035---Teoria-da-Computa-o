@@ -1,21 +1,6 @@
-# Motor de Execução da Máquina de Turing de Duas Fitas
+# Máquina de Turing de Duas Fitas
 
-Este projeto fornece uma API baseada em Flask para executar uma Máquina de Turing de duas fitas (Fita 1 e Fita 2). O diferencial desta API é que ela atua puramente como um **Motor de Execução**. A API não contém lógicas ou operações matemáticas pré-definidas (como soma ou multiplicação); toda a configuração, alfabeto e transições de estado devem ser injetados pelo cliente (Frontend) no momento da requisição.
-
----
-
-## 1. Como a Máquina Funciona
-
-A Máquina de Turing modelada neste projeto é composta por:
-* **Duas Fitas Infinitas (Fita 1 e Fita 2)**: Cada fita possui o seu próprio cabeçote de leitura/escrita que se move independentemente. A Fita 1 é preenchida com a `entrada` inicial fornecida e a Fita 2 começa vazia.
-* **Estados e Transições**: A máquina processa iterações baseada no Estado Atual e nos Símbolos Lidos pelas duas fitas simultaneamente. Em cada iteração, ela executa uma Transição que diz: (1) O que escrever na Fita 1, (2) O que escrever na Fita 2, (3) Para onde mover o cabeçote 1, (4) Para onde mover o cabeçote 2, e (5) Qual será o Próximo Estado.
-* **Fim da Execução**: A máquina para imediatamente quando atinge o `estado_aceitacao` definido, o `estado_rejeicao` definido, ou caso não haja nenhuma transição mapeada para o estado atual (caindo em rejeição por padrão).
-
-### Movimentos Permitidos
-Para os cabeçotes de cada fita, você deve informar a direção como um dos três valores:
-- `D`: Move para a Direita.
-- `E`: Move para a Esquerda.
-- `P`: Para (Fica na mesma posição).
+O algoritmo foi implementado em Python para uma Máquina de Turing de duas fitas. A estrutura foi desenvolvida como uma API em Flask, permitindo a execução e a visualização da máquina em uma interface gráfica. A implementação dos arquivos Python foi realizada por ambos os membros do grupo, com base nos conceitos estudados em aula e em materiais disponíveis na internet sobre o tema. Já a interface visual foi desenvolvida seguindo o modelo do aplicativo de Máquina de Turing utilizado em aula, com auxílio de inteligência artificial nesse ponto.
 
 ---
 
@@ -26,7 +11,7 @@ Recomendamos criar um ambiente virtual para rodar a aplicação, como requisito 
 Crie o ambiente virtual
 
 ```sh
-python -m venv nome_do_seu_ambiente
+python -m venv env
 ```
 
 Acesse o ambiente virtual

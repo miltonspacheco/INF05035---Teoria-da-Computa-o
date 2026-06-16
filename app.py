@@ -1,104 +1,18 @@
 from flask import Flask, request, jsonify, render_template, stream_with_context, Response
 from main import MaquinaTuringDuasFitas, Configuracao, Transicao
 from flask_cors import CORS
-from flasgger import Swagger
 import json
 import time
 
 app = Flask(__name__)
 CORS(app)
-swagger = Swagger(app)
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
 @app.route('/api/run', methods=['POST'])
-def run_tm():
-    """
-    Executa a Máquina de Turing de Duas Fitas com base na construção fornecida.
-    ---
-    tags:
-      - Simulador TM
-    parameters:
-      - in: body
-        name: payload
-        description: Objeto contendo a entrada, configuração e as transições para montar a máquina.
-        schema:
-          type: object
-          required:
-            - entrada
-            - configuracao
-            - transicoes
-          properties:
-            entrada:
-              type: string
-              description: A string de entrada que estará na Fita 1 inicialmente.
-              example: "11+111=11111"
-            espera_ms:
-              type: integer
-              description: Milissegundos a aguardar entre o envio de cada iteração da máquina (para controlar a velocidade do NDJSON Stream no servidor). Se omitido ou 0, processará o mais rápido possível.
-              example: 200
-            configuracao:
-              type: object
-              properties:
-                simbolo_inicial:
-                  type: string
-                  example: ">"
-                simbolo_branco:
-                  type: string
-                  example: "_"
-                alfabeto_entrada:
-                  type: array
-                  items:
-                    type: string
-                  example: ["1", "+", "="]
-                alfabeto_auxiliar:
-                  type: array
-                  items:
-                    type: string
-                  example: ["1", "X", "Z"]
-                estado_inicial:
-                  type: string
-                  example: "q0"
-                estado_aceitacao:
-                  type: string
-                  example: "q_aceita"
-                estado_rejeicao:
-                  type: string
-                  example: "q_rejeita"
-            transicoes:
-              type: array
-              items:
-                type: object
-                properties:
-                  estado_origem:
-                    type: string
-                    example: "q0"
-                  simbolos_lidos:
-                    type: array
-                    items:
-                      type: string
-                    example: [">", ">"]
-                  simbolos_escritos:
-                    type: array
-                    items:
-                      type: string
-                    example: [">", ">"]
-                  direcoes:
-                    type: array
-                    items:
-                      type: string
-                    example: ["D", "D"]
-                  estado_destino:
-                    type: string
-                    example: "q_read_x"
-    responses:
-      200:
-        description: A execução detalhada da máquina, contendo o passo-a-passo.
-      400:
-        description: Erro na validação do payload ou configuração inválida.
-    """
+def run_maquina_de_touring():
     data = request.json
     if not data or 'entrada' not in data or 'configuracao' not in data or 'transicoes' not in data:
         return jsonify({"error": "Payload inválido. Certifique-se de enviar 'entrada', 'configuracao' e 'transicoes'."}), 400
