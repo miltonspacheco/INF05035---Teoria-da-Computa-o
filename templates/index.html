@@ -17,46 +17,83 @@
     </header>
 
     <main>
-        <div class="input-group">
-            <input type="text" id="equation" placeholder="Digite a entrada da fita" autocomplete="off">
-            <button id="runBtn" onclick="runMachine()">Simular</button>
-        </div>
+      
+        <div class="top-row">
+           
+            <div class="top-col">
+                <div class="input-group">
+                    <input type="text" id="equation" placeholder="Digite a entrada da fita" autocomplete="off">
+                    <button id="runBtn" onclick="runMachine()">Simular</button>
+                </div>
 
-        <div class="builder-panel">
-            <h2>Estados e transições</h2>
-            <p>Defina a máquina manualmente preenchendo os estados e as transições abaixo.</p>
-
-            <div class="config-grid">
-                <div class="config-field">
-                    <label for="custom-start-symbol">Símbolo inicial</label>
-                    <input type="text" id="custom-start-symbol" value=">">
-                </div>
-                <div class="config-field">
-                    <label for="custom-blank-symbol">Símbolo branco</label>
-                    <input type="text" id="custom-blank-symbol" value="_">
-                </div>
-                <div class="config-field">
-                    <label for="custom-input-alphabet">Alfabeto de entrada</label>
-                    <input type="text" id="custom-input-alphabet" placeholder="1, +, =">
-                </div>
-                <div class="config-field">
-                    <label for="custom-initial-state">Estado inicial</label>
-                    <input type="text" id="custom-initial-state" value="q0">
-                </div>
-                <div class="config-field">
-                    <label for="custom-accept-state">Estado de aceitação</label>
-                    <input type="text" id="custom-accept-state" value="q_aceita">
-                </div>
-                <div class="config-field">
-                    <label for="custom-reject-state">Estado de rejeição</label>
-                    <input type="text" id="custom-reject-state" value="q_rejeita">
-                </div>
-                <div class="config-field">
-                    <label for="custom-auxiliary-alphabet">Alfabeto auxiliar</label>
-                    <input type="text" id="custom-auxiliary-alphabet" placeholder="X, Z">
+                <div class="panel">
+                    <h2>Exemplos Prontos</h2>
+                    <p>Clique num exemplo para carregar automaticamente.</p>
+                    <div class="examples-row">
+                        <div class="example-card" onclick="loadExample('anbn')">
+                            <h3>a<sup>n</sup> b<sup>n</sup></h3>
+                            <p>Mesmo nº de a's e b's. Ex: aabb</p>
+                        </div>
+                        <div class="example-card" onclick="loadExample('2x')">
+                            <h3>2<sup>x</sup></h3>
+                            <p>Calcula 2^x em unário. Ex: 111</p>
+                        </div>
+                        <div class="example-card" onclick="loadExample('2x1')">
+                            <h3>2x+1</h3>
+                            <p>Calcula 2x+1 em unário. Ex: 11</p>
+                        </div>
+                        <div class="example-card" onclick="loadExample('par')">
+                            <h3>Par?</h3>
+                            <p>Aceita se nº de 1's é par. Ex: 1111</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
+            
+            <div class="top-col">
+                <div class="panel">
+                    <h2>Configuração</h2>
+                    <div class="config-grid">
+                        <div class="config-field">
+                            <label for="custom-start-symbol">Símbolo inicial</label>
+                            <input type="text" id="custom-start-symbol" value=">">
+                        </div>
+                        <div class="config-field">
+                            <label for="custom-blank-symbol">Símbolo branco</label>
+                            <input type="text" id="custom-blank-symbol" value="_">
+                        </div>
+                        <div class="config-field">
+                            <label for="custom-input-alphabet">Alfabeto entrada</label>
+                            <input type="text" id="custom-input-alphabet" placeholder="1, +, =">
+                        </div>
+                        <div class="config-field">
+                            <label for="custom-initial-state">Estado inicial</label>
+                            <input type="text" id="custom-initial-state" value="q0">
+                        </div>
+                        <div class="config-field">
+                            <label for="custom-accept-state">Estado aceitação</label>
+                            <input type="text" id="custom-accept-state" value="q_aceita">
+                        </div>
+                        <div class="config-field">
+                            <label for="custom-reject-state">Estado rejeição</label>
+                            <input type="text" id="custom-reject-state" value="q_rejeita">
+                        </div>
+                        <div class="config-field" style="grid-column: span 2;">
+                            <label for="custom-auxiliary-alphabet">Alfabeto auxiliar</label>
+                            <input type="text" id="custom-auxiliary-alphabet" placeholder="X, Z">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+       
+        <div class="panel">
+            <div class="panel-header-row">
+                <h2>Transições</h2>
+                <button type="button" class="small-btn" onclick="adicionarLinhaTransicao()">+ Adicionar</button>
+            </div>
             <div class="table-wrapper">
                 <table class="transition-table">
                     <thead>
@@ -75,14 +112,19 @@
                     <tbody id="transition-table-body"></tbody>
                 </table>
             </div>
+        </div>
 
-            <div class="builder-actions">
-                <button type="button" class="small-btn" onclick="adicionarLinhaTransicao()">Adicionar transição</button>
+       
+        <div class="diagram-container" id="diagram-container" style="display: none;">
+            <div class="diagram-header">
+                <h3>Diagrama de Estados</h3>
             </div>
+            <canvas id="state-diagram"></canvas>
         </div>
 
         <div id="loading">Processando máquina de turing...</div>
 
+       
         <div id="simulation-area" style="display: none;">
             <div class="status-container">
                 <div class="status-item">
@@ -99,7 +141,7 @@
                 </div>
             </div>
 
-            <div class="tapes-container">
+            <div class="tapes-row">
                 <div class="tape-wrapper">
                     <div class="tape-label">FITA 1</div>
                     <div class="tape" id="tape1"></div>
@@ -110,19 +152,22 @@
                 </div>
             </div>
 
-            <div class="slider-container">
-                <label for="speed">Velocidade:</label>
-                <input type="range" id="speed" min="10" max="1000" value="200" dir="rtl">
-            </div>
-
-            <div class="controls">
-                <button id="btnPrev" onclick="step(-1)" disabled>&#9664; Passo Anterior</button>
-                <button id="btnPlay" onclick="togglePlay()">Reproduzir</button>
-                <button id="btnNext" onclick="step(1)" disabled>Próximo Passo &#9654;</button>
+            <div class="sim-footer">
+                <div class="slider-container">
+                    <label for="speed">Velocidade:</label>
+                    <input type="range" id="speed" min="10" max="1000" value="200" dir="rtl">
+                    <span id="speed-val" style="font-family:'Fira Code',monospace; font-size:0.85rem; min-width:55px;">200 ms</span>
+                </div>
+                <div class="controls">
+                    <button id="btnPrev" onclick="step(-1)" disabled>&#9664; Anterior</button>
+                    <button id="btnPlay" onclick="togglePlay()">Reproduzir</button>
+                    <button id="btnNext" onclick="step(1)" disabled>Próximo &#9654;</button>
+                </div>
             </div>
         </div>
     </main>
 
+    <script src="{{ url_for('static', filename='js/diagram.js') }}"></script>
     <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 </body>
 </html>

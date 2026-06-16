@@ -80,7 +80,7 @@ class MaquinaTuringDuasFitas:
         if verbose:
             self.imprimir_estado(iteracao)
             
-        # Se já estiver em estado de aceitação ou rejeição, a máquina parou
+        
         if self.estado_atual in [self.config.estado_aceitacao, self.config.estado_rejeicao]:
             return False
             

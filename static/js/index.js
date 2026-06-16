@@ -2,6 +2,7 @@ let historyData = [];
 let currentIndex = 0;
 let isPlaying = false;
 let playInterval = null;
+const diagram = new StateDiagram('state-diagram');
 
 function criarOpcoesDirecao(selectedValue = 'P') {
     return ['E', 'D', 'P']
@@ -144,6 +145,142 @@ function construirTransicao(estadoOrigem, simbolosLidos, simbolosEscritos, direc
     };
 }
 
+const anbn_payload = {
+    "configuracao": {
+        "simbolo_inicial": ">", "simbolo_branco": "_",
+        "alfabeto_entrada": ["a", "b"], "alfabeto_auxiliar": ["A", "B"],
+        "estado_inicial": "q0", "estado_aceitacao": "q_aceita", "estado_rejeicao": "q_rejeita"
+    },
+    "transicoes": [
+        {"estado_origem": "q0", "simbolos_lidos": [">", ">"], "simbolos_escritos": [">", ">"], "direcoes": ["D", "D"], "estado_destino": "q1"},
+        {"estado_origem": "q1", "simbolos_lidos": ["_", "_"], "simbolos_escritos": ["_", "_"], "direcoes": ["P", "P"], "estado_destino": "q_aceita"},
+        {"estado_origem": "q1", "simbolos_lidos": ["a", "_"], "simbolos_escritos": ["a", "A"], "direcoes": ["D", "D"], "estado_destino": "q2"},
+        {"estado_origem": "q2", "simbolos_lidos": ["a", "_"], "simbolos_escritos": ["a", "A"], "direcoes": ["D", "D"], "estado_destino": "q2"},
+        {"estado_origem": "q2", "simbolos_lidos": ["b", "_"], "simbolos_escritos": ["b", "_"], "direcoes": ["P", "E"], "estado_destino": "q3"},
+        {"estado_origem": "q3", "simbolos_lidos": ["b", "A"], "simbolos_escritos": ["b", "A"], "direcoes": ["P", "E"], "estado_destino": "q3"},
+        {"estado_origem": "q3", "simbolos_lidos": ["b", ">"], "simbolos_escritos": ["b", ">"], "direcoes": ["P", "D"], "estado_destino": "q4"},
+        {"estado_origem": "q4", "simbolos_lidos": ["b", "A"], "simbolos_escritos": ["b", "A"], "direcoes": ["D", "D"], "estado_destino": "q4"},
+        {"estado_origem": "q4", "simbolos_lidos": ["_", "_"], "simbolos_escritos": ["_", "_"], "direcoes": ["P", "P"], "estado_destino": "q_aceita"},
+        {"estado_origem": "q4", "simbolos_lidos": ["_", "A"], "simbolos_escritos": ["_", "A"], "direcoes": ["P", "P"], "estado_destino": "q_rejeita"},
+        {"estado_origem": "q4", "simbolos_lidos": ["b", "_"], "simbolos_escritos": ["b", "_"], "direcoes": ["P", "P"], "estado_destino": "q_rejeita"}
+    ]
+};
+
+const pow2x_payload = {
+    "configuracao": {
+        "simbolo_inicial": ">", "simbolo_branco": "_",
+        "alfabeto_entrada": ["1"], "alfabeto_auxiliar": ["A", "1"],
+        "estado_inicial": "q0", "estado_aceitacao": "q_aceita", "estado_rejeicao": "q_rejeita"
+    },
+    "transicoes": [
+        {"estado_origem": "q0", "simbolos_lidos": [">", ">"], "simbolos_escritos": [">", ">"], "direcoes": ["D", "D"], "estado_destino": "q1"},
+        {"estado_origem": "q1", "simbolos_lidos": ["1", "_"], "simbolos_escritos": ["_", "1"], "direcoes": ["D", "D"], "estado_destino": "q1"},
+        {"estado_origem": "q1", "simbolos_lidos": ["_", "_"], "simbolos_escritos": ["_", "_"], "direcoes": ["E", "E"], "estado_destino": "q2"},
+        {"estado_origem": "q2", "simbolos_lidos": ["_", "1"], "simbolos_escritos": ["_", "1"], "direcoes": ["E", "E"], "estado_destino": "q2"},
+        {"estado_origem": "q2", "simbolos_lidos": [">", ">"], "simbolos_escritos": [">", ">"], "direcoes": ["D", "D"], "estado_destino": "q3"},
+        {"estado_origem": "q3", "simbolos_lidos": ["_", "1"], "simbolos_escritos": ["1", "1"], "direcoes": ["E", "P"], "estado_destino": "q4"},
+        {"estado_origem": "q3", "simbolos_lidos": ["_", "_"], "simbolos_escritos": ["1", "_"], "direcoes": ["P", "P"], "estado_destino": "q_aceita"},
+        {"estado_origem": "q4", "simbolos_lidos": [">", "1"], "simbolos_escritos": [">", "1"], "direcoes": ["D", "P"], "estado_destino": "q5"},
+        {"estado_origem": "q5", "simbolos_lidos": ["1", "1"], "simbolos_escritos": ["A", "1"], "direcoes": ["D", "P"], "estado_destino": "q6"},
+        {"estado_origem": "q5", "simbolos_lidos": ["1", "_"], "simbolos_escritos": ["1", "_"], "direcoes": ["P", "P"], "estado_destino": "q_aceita"},
+        {"estado_origem": "q6", "simbolos_lidos": ["1", "1"], "simbolos_escritos": ["A", "1"], "direcoes": ["D", "P"], "estado_destino": "q6"},
+        {"estado_origem": "q6", "simbolos_lidos": ["_", "1"], "simbolos_escritos": ["_", "1"], "direcoes": ["E", "P"], "estado_destino": "q7"},
+        {"estado_origem": "q7", "simbolos_lidos": ["A", "1"], "simbolos_escritos": ["A", "1"], "direcoes": ["E", "P"], "estado_destino": "q7"},
+        {"estado_origem": "q7", "simbolos_lidos": [">", "1"], "simbolos_escritos": [">", "1"], "direcoes": ["D", "P"], "estado_destino": "q8"},
+        {"estado_origem": "q8", "simbolos_lidos": ["A", "1"], "simbolos_escritos": ["1", "1"], "direcoes": ["D", "P"], "estado_destino": "q9"},
+        {"estado_origem": "q9", "simbolos_lidos": ["A", "1"], "simbolos_escritos": ["A", "1"], "direcoes": ["D", "P"], "estado_destino": "q9"},
+        {"estado_origem": "q9", "simbolos_lidos": ["1", "1"], "simbolos_escritos": ["1", "1"], "direcoes": ["D", "P"], "estado_destino": "q9"},
+        {"estado_origem": "q9", "simbolos_lidos": ["_", "1"], "simbolos_escritos": ["1", "1"], "direcoes": ["E", "P"], "estado_destino": "q10"},
+        {"estado_origem": "q10", "simbolos_lidos": ["1", "1"], "simbolos_escritos": ["1", "1"], "direcoes": ["E", "P"], "estado_destino": "q10"},
+        {"estado_origem": "q10", "simbolos_lidos": ["A", "1"], "simbolos_escritos": ["A", "1"], "direcoes": ["P", "P"], "estado_destino": "q8"},
+        {"estado_origem": "q10", "simbolos_lidos": [">", "1"], "simbolos_escritos": [">", "1"], "direcoes": ["D", "P"], "estado_destino": "q11"},
+        {"estado_origem": "q11", "simbolos_lidos": ["1", "1"], "simbolos_escritos": ["1", "1"], "direcoes": ["E", "P"], "estado_destino": "q11"},
+        {"estado_origem": "q11", "simbolos_lidos": [">", "1"], "simbolos_escritos": [">", "1"], "direcoes": ["D", "D"], "estado_destino": "q5"}
+    ]
+};
+
+const pow2x1_payload = {
+    "configuracao": {
+        "simbolo_inicial": ">", "simbolo_branco": "_",
+        "alfabeto_entrada": ["1"], "alfabeto_auxiliar": ["1"],
+        "estado_inicial": "q0", "estado_aceitacao": "q_aceita", "estado_rejeicao": "q_rejeita"
+    },
+    "transicoes": [
+        {"estado_origem": "q0", "simbolos_lidos": [">", ">"], "simbolos_escritos": [">", ">"], "direcoes": ["D", "D"], "estado_destino": "q1"},
+        {"estado_origem": "q1", "simbolos_lidos": ["1", "_"], "simbolos_escritos": ["_", "1"], "direcoes": ["D", "D"], "estado_destino": "q1"},
+        {"estado_origem": "q1", "simbolos_lidos": ["_", "_"], "simbolos_escritos": ["_", "_"], "direcoes": ["E", "E"], "estado_destino": "q2"},
+        {"estado_origem": "q2", "simbolos_lidos": ["_", "1"], "simbolos_escritos": ["_", "1"], "direcoes": ["E", "E"], "estado_destino": "q2"},
+        {"estado_origem": "q2", "simbolos_lidos": [">", ">"], "simbolos_escritos": [">", ">"], "direcoes": ["D", "D"], "estado_destino": "q3"},
+        {"estado_origem": "q3", "simbolos_lidos": ["_", "1"], "simbolos_escritos": ["1", "1"], "direcoes": ["D", "P"], "estado_destino": "q4"},
+        {"estado_origem": "q3", "simbolos_lidos": ["_", "_"], "simbolos_escritos": ["1", "_"], "direcoes": ["P", "P"], "estado_destino": "q_aceita"},
+        {"estado_origem": "q4", "simbolos_lidos": ["_", "1"], "simbolos_escritos": ["1", "1"], "direcoes": ["D", "D"], "estado_destino": "q3"}
+    ]
+};
+
+const par_payload = {
+    "configuracao": {
+        "simbolo_inicial": ">", "simbolo_branco": "_",
+        "alfabeto_entrada": ["1"], "alfabeto_auxiliar": [],
+        "estado_inicial": "q0", "estado_aceitacao": "q_aceita", "estado_rejeicao": "q_rejeita"
+    },
+    "transicoes": [
+        {"estado_origem": "q0", "simbolos_lidos": [">", ">"], "simbolos_escritos": [">", ">"], "direcoes": ["D", "D"], "estado_destino": "q1"},
+        {"estado_origem": "q1", "simbolos_lidos": ["1", "_"], "simbolos_escritos": ["1", "_"], "direcoes": ["D", "P"], "estado_destino": "q2"},
+        {"estado_origem": "q1", "simbolos_lidos": ["_", "_"], "simbolos_escritos": ["_", "_"], "direcoes": ["P", "P"], "estado_destino": "q_aceita"},
+        {"estado_origem": "q2", "simbolos_lidos": ["1", "_"], "simbolos_escritos": ["1", "_"], "direcoes": ["D", "P"], "estado_destino": "q1"},
+        {"estado_origem": "q2", "simbolos_lidos": ["_", "_"], "simbolos_escritos": ["_", "_"], "direcoes": ["P", "P"], "estado_destino": "q_rejeita"}
+    ]
+};
+
+const EXAMPLES = {
+    'anbn':  { payload: anbn_payload,  input: 'aabb' },
+    '2x':    { payload: pow2x_payload, input: '111' },
+    '2x1':   { payload: pow2x1_payload, input: '11' },
+    'par':   { payload: par_payload,   input: '1111' }
+};
+
+function loadExample(type) {
+    document.querySelectorAll('.example-card').forEach(c => {
+        c.style.borderColor = 'var(--border-color)';
+        c.style.boxShadow = 'none';
+    });
+
+    const ex = EXAMPLES[type];
+    if (!ex) return;
+
+    event.currentTarget.style.borderColor = 'var(--primary-color)';
+    event.currentTarget.style.boxShadow = '0 0 10px rgba(59,130,246,0.25)';
+
+    const payload = ex.payload;
+    document.getElementById('equation').value = ex.input;
+    document.getElementById('custom-start-symbol').value = payload.configuracao.simbolo_inicial;
+    document.getElementById('custom-blank-symbol').value = payload.configuracao.simbolo_branco;
+    document.getElementById('custom-input-alphabet').value = payload.configuracao.alfabeto_entrada.join(', ');
+    document.getElementById('custom-auxiliary-alphabet').value = (payload.configuracao.alfabeto_auxiliar || []).join(', ');
+    document.getElementById('custom-initial-state').value = payload.configuracao.estado_inicial;
+    document.getElementById('custom-accept-state').value = payload.configuracao.estado_aceitacao;
+    document.getElementById('custom-reject-state').value = payload.configuracao.estado_rejeicao;
+
+    const tbody = document.getElementById('transition-table-body');
+    tbody.innerHTML = '';
+
+    payload.transicoes.forEach(t => {
+        adicionarLinhaTransicao({
+            estado_origem: t.estado_origem,
+            leitura_f1: t.simbolos_lidos[0],
+            leitura_f2: t.simbolos_lidos[1],
+            escrita_f1: t.simbolos_escritos[0],
+            escrita_f2: t.simbolos_escritos[1],
+            direcao_f1: t.direcoes[0],
+            direcao_f2: t.direcoes[1],
+            estado_destino: t.estado_destino
+        });
+    });
+   
+    diagram.build(payload.transicoes, payload.configuracao);
+    document.getElementById('diagram-container').style.display = 'block';
+}
+
         function buildPayload(eqInput) {
             const customMachineDefinition = coletarDefinicaoMaquinaCustomizada(eqInput);
             if (!customMachineDefinition) {
@@ -173,6 +310,10 @@ function construirTransicao(estadoOrigem, simbolosLidos, simbolosEscritos, direc
 
             try {
                 const payload = buildPayload(eqInput);
+
+               
+                diagram.build(payload.transicoes, payload.configuracao);
+                document.getElementById('diagram-container').style.display = 'block';
 
                 const response = await fetch('/api/run', {
                     method: 'POST',
@@ -214,7 +355,7 @@ function construirTransicao(estadoOrigem, simbolosLidos, simbolosEscritos, direc
                     buffer += decoder.decode(value, { stream: true });
                     const lines = buffer.split('\n');
                     
-                    // Manter a última parte que pode estar incompleta no buffer
+                    
                     buffer = lines.pop();
 
                     for (const line of lines) {
@@ -228,7 +369,7 @@ function construirTransicao(estadoOrigem, simbolosLidos, simbolosEscritos, direc
 
                         historyData.push(data);
                         
-                        // Desenhar imediatamente o passo ao vivo na tela
+                       
                         currentIndex = historyData.length - 1;
                         renderStep();
 
@@ -243,7 +384,7 @@ function construirTransicao(estadoOrigem, simbolosLidos, simbolosEscritos, direc
                             }
                         }
                         
-                        // Aguardar baseado no slider para ditar a velocidade do streaming visualmente
+                       
                         const speed = document.getElementById('speed').value;
                         await new Promise(r => setTimeout(r, speed));
                     }
@@ -260,16 +401,15 @@ function construirTransicao(estadoOrigem, simbolosLidos, simbolosEscritos, direc
             const container = document.getElementById(containerId);
             container.innerHTML = '';
             
-            // A string vem no formato: _11[1]1_
-            // Vamos fazer parse manual.
+           
             let i = 0;
             while (i < tapeString.length) {
                 if (tapeString[i] === '[') {
-                    // head element
-                    i++; // skip [
+                
+                    i++; 
                     let char = tapeString[i];
-                    i++; // skip char
-                    // skip ]
+                    i++; 
+      
                     i++;
                     
                     const div = document.createElement('div');
@@ -297,11 +437,15 @@ function construirTransicao(estadoOrigem, simbolosLidos, simbolosEscritos, direc
             renderTape(stepData.fita1, 'tape1');
             renderTape(stepData.fita2, 'tape2');
 
+           
+            const prevState = currentIndex > 0 ? historyData[currentIndex - 1].estado : null;
+            diagram.highlight(stepData.estado, prevState);
+
             document.getElementById('btnPrev').disabled = (currentIndex === 0);
             document.getElementById('btnNext').disabled = (currentIndex === historyData.length - 1);
             
             if (currentIndex === historyData.length - 1 && isPlaying) {
-                togglePlay(); // stop automatically
+                togglePlay(); 
             }
         }
 
@@ -321,7 +465,7 @@ function construirTransicao(estadoOrigem, simbolosLidos, simbolosEscritos, direc
                 btnPlay.textContent = 'Reproduzir';
             } else {
                 if (currentIndex === historyData.length - 1) {
-                    currentIndex = 0; // restart if at the end
+                    currentIndex = 0;
                 }
                 isPlaying = true;
                 btnPlay.textContent = 'Pausar';
@@ -333,8 +477,9 @@ function construirTransicao(estadoOrigem, simbolosLidos, simbolosEscritos, direc
             }
         }
 
-        // Update speed dynamically
+  
         document.getElementById('speed').addEventListener('input', function(e) {
+            document.getElementById('speed-val').textContent = e.target.value + ' ms';
             if (isPlaying) {
                 clearInterval(playInterval);
                 playInterval = setInterval(() => {
