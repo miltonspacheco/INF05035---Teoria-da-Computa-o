@@ -15,7 +15,7 @@ def index():
 def run_tm():
     """
     Executa a Máquina de Turing de Duas Fitas com base na construção fornecida.
-    
+    ---
     tags:
       - Simulador TM
     parameters:
